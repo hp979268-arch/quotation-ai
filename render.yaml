@@ -3,6 +3,7 @@ services:
   - type: web
     name: quotation-ai-backend
     runtime: python
+    plan: free
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
@@ -11,7 +12,3 @@ services:
         value: 3.11.0
       - key: IS_CLOUD
         value: "true"
-    disk:
-      name: quotation-data
-      mountPath: /opt/render/project/src
-      sizeGB: 2
