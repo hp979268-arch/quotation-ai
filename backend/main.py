@@ -53,8 +53,19 @@ QUOTES_HISTORY_DIR = os.path.join(DATA_DIR, "quotes_history")
 QUOTATION_PDF_PATH = os.path.join(DATA_DIR, "quotation.pdf")
 
 # Ensure writable dirs exist
-for d in [STATIC_IMAGES_DIR, STATIC_QUOTES_DIR, UPLOAD_DIR, QUOTES_HISTORY_DIR]:
+for d in [STATIC_QUOTES_DIR, UPLOAD_DIR, QUOTES_HISTORY_DIR]:
     os.makedirs(d, exist_ok=True)
+
+if os.getenv("RENDER") == "true":
+    try:
+        import shutil
+        if os.path.exists(STATIC_IMAGES_DIR):
+            print(f"Clearing persistent image cache at {STATIC_IMAGES_DIR} to force repo images...")
+            shutil.rmtree(STATIC_IMAGES_DIR, ignore_errors=True)
+    except Exception:
+        pass
+
+os.makedirs(STATIC_IMAGES_DIR, exist_ok=True)
 
 def _resolve_case_insensitive_path(root_dir: str, relative_path: str) -> str:
     current = os.path.abspath(root_dir)
