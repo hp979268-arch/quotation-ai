@@ -43,8 +43,8 @@ function ImageNotFoundBox() {
     <div
       title="Image Not Found"
       style={{
-        width: '52px',
-        height: '52px',
+        width: '64px',
+        height: '64px',
         borderRadius: '10px',
         border: '1px dashed rgba(248, 113, 113, 0.45)',
         background: 'rgba(248, 113, 113, 0.07)',
@@ -100,8 +100,8 @@ function SuggestionThumbnail({ suggestion, product }) {
       alt=""
       onError={() => setFailedPrimary(true)}
       style={{
-        width: '52px',
-        height: '52px',
+        width: '64px',
+        height: '64px',
         objectFit: 'contain',
         background: '#ffffff',
         borderRadius: '10px',
