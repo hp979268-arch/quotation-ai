@@ -41,21 +41,17 @@ def fix_all_aquant_variants():
         current_price = str(item.get('price', '0'))
         
         found_price = None
+        all_window_mrps = []
         for i, block_text in enumerate(blocks):
-            # Try to find the block containing this variant code exactly
             if code in block_text or f"{base_code} {code.split(' ')[-1]}" in block_text:
-                # Look backwards for the nearest MRP
-                for j in range(i, max(-1, i-6), -1):
+                for j in range(i, max(-1, i-7), -1):
                     prev_block = blocks[j]
-                    mrps = re.findall(r'MRP\s*:\s*[`₹]?\s*([\d,]+)', prev_block)
+                    mrps = re.findall(r'(?:MRP|PRICE)\s*[:-]?\s*[`₹]?\s*([\d,]+)', prev_block, re.IGNORECASE)
                     if mrps:
                         vals = [int(m.replace(',', '')) for m in mrps]
-                        valid_vals = [v for v in vals if v > 1000]
-                        if valid_vals:
-                            # Highest price is usually the special finish price
-                            found_price = str(max(valid_vals))
-                            break
-                if found_price:
+                        all_window_mrps.extend([v for v in vals if v > 1000])
+                if all_window_mrps:
+                    found_price = str(max(all_window_mrps))
                     break
                     
         if found_price and found_price != current_price:
