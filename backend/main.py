@@ -650,10 +650,47 @@ async def startup_event():
                 index_local_catalogs(force=True)
             else:
                 print("Using saved search index.")
+
+            # On Render: always force-seed MongoDB from the latest bundled index
+            if os.getenv("RENDER") == "true" and mongodb.is_enabled():
+                try:
+                    bundled_index = search_engine.INDEX_FILE_BUNDLED
+                    if os.path.exists(bundled_index):
+                        with open(bundled_index, "r", encoding="utf-8") as _f:
+                            _data = json.load(_f)
+                        mongodb.save_search_index(_data)
+                        print(f"Render startup: Seeded MongoDB from bundled index ({len(_data.get('stored_items',[]))} items).")
+                except Exception as _e:
+                    print(f"Warning: Render startup MongoDB seed failed: {_e}")
+
         except Exception as e:
             print(f"Warning: background startup warmup failed: {e}")
 
     threading.Thread(target=warm_catalog_index, daemon=True).start()
+
+
+@app.get("/admin/force-mongo-sync")
+async def force_mongo_sync(secret: str = ""):
+    """Force-push the bundled search_index_v2.json to MongoDB. Pass ?secret=sync123 to authorize."""
+    if secret != "sync123":
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    import search_engine
+    bundled_index = search_engine.INDEX_FILE_BUNDLED
+    if not os.path.exists(bundled_index):
+        raise HTTPException(status_code=404, detail="Bundled index not found")
+    try:
+        with open(bundled_index, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        mongodb.save_search_index(data)
+        count = len(data.get("stored_items", []))
+        # Also reload in-memory index
+        search_engine.stored_items = data.get("stored_items", [])
+        search_engine.keyword_index = data.get("keyword_index", {})
+        search_engine._suggestion_cache.clear()
+        search_engine.item_code_meta_cache.clear()
+        return {"message": f"MongoDB synced successfully with {count} items.", "items": count}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/")
