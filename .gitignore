@@ -106,3 +106,6 @@ backend/scratch/
 backend/static/images/Aquant/Aquant_Page_*.png
 backend/static/images/Aquant/*_new.png
 
+
+dist/
+win-unpacked/
