@@ -10,7 +10,7 @@ from PIL import Image as PILImage
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 # PDF aur output folder ka path
-doc_path = r"backend/uploads/Kohler_Pricebook (March'26).pdf"
+doc_path = r"backend/uploads/Kohler_PriceBook (June'26).pdf"
 output_dir = r"backend/static/images/Kohler"
 
 # Clean old files

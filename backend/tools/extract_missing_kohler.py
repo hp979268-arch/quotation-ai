@@ -5,7 +5,7 @@ import re
 
 INDEX_PATH = "search_index_v2.json"
 IMG_ROOT = os.path.join("static", "images", "kohler")
-PDF_PATH = os.path.join("uploads", "Kohler_Pricebook (March'26).pdf")
+PDF_PATH = os.path.join("uploads", "Kohler_PriceBook (June'26).pdf")
 
 def compact_safe(s):
     return re.sub(r"[^A-Za-z0-9_-]", "", str(s).replace(" ", "_")).strip("_")

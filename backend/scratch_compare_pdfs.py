@@ -7,5 +7,5 @@ def find_22786(pdf_path):
         if "22786" in text:
             print(f"Found 22786 in {pdf_path} on page {i}")
             
-find_22786(r"uploads/Kohler_Pricebook (March'26).pdf")
+find_22786(r"uploads/Kohler_PriceBook (June'26).pdf")
 find_22786(r"uploads/Kohler_PriceBook (June'26).pdf")

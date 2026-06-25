@@ -1,7 +1,7 @@
 import fitz
 import os
 
-pdf_path = "uploads/Kohler_Pricebook (March'26).pdf"
+pdf_path = "uploads/Kohler_PriceBook (June'26).pdf"
 doc = fitz.open(pdf_path)
 page = doc[163]
 target_rect = fitz.Rect(419.93, 165.11, 442.42, 174.61)

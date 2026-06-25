@@ -10,6 +10,6 @@ def search_text(pdf_path, page_num):
             print("Found block:", b)
 
 print("March:")
-search_text(r"uploads/Kohler_Pricebook (March'26).pdf", 112)
+search_text(r"uploads/Kohler_PriceBook (June'26).pdf", 112)
 print("June:")
 search_text(r"uploads/Kohler_PriceBook (June'26).pdf", 114)

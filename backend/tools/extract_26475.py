@@ -1,7 +1,7 @@
 import fitz
 import os
 
-PDF_PATH = os.path.join("uploads", "Kohler_Pricebook (March'26).pdf")
+PDF_PATH = os.path.join("uploads", "Kohler_PriceBook (June'26).pdf")
 IMG_ROOT = os.path.join("static", "images", "kohler")
 CODE = "K-26475IN-ER 0"
 

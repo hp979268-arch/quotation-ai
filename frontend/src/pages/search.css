@@ -225,7 +225,7 @@
   object-fit: contain;
   background: #ffffff; /* Always white inside for product logos */
   border-radius: 0.8rem;
-  padding: 0.4rem;
+  padding: 0.6rem;
   border: 1px solid var(--border-color);
   box-shadow: 0 2px 4px rgba(0,0,0,0.04);
 }

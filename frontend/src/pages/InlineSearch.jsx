@@ -105,7 +105,8 @@ function SuggestionThumbnail({ suggestion, product }) {
         objectFit: 'contain',
         background: '#ffffff',
         borderRadius: '10px',
-        padding: '4px',
+        padding: '10px',
+        border: '1px solid rgba(95, 99, 104, 0.15)',
         flexShrink: 0,
       }}
     />
@@ -329,19 +330,19 @@ export default function InlineSearch({ onAdd, disabled = false }) {
         if (!trimmed) continue;
         if (norm(trimmed) === normSku) continue;
 
-        trimmed = trimmed.replace(/mrp\s*(?:rs\.?|rs|INR|₹)?\s*[\d,\s`\/\-]*/gi, '');
-        trimmed = trimmed.replace(/(?:rs\.?|rs|INR|₹)\s*[\d,\s`\/\-]*/gi, '');
-        trimmed = trimmed.replace(/price\s*[\d,\s`\/\-]*/gi, '');
+        trimmed = trimmed.replace(/mrp\s*(?:rs\.?|rs|INR|₹)?\s*[\d,\.\s`\/\-]*/gi, '');
+        trimmed = trimmed.replace(/(?:rs\.?|rs|INR|₹)\s*[\d,\.\s`\/\-]*/gi, '');
+        trimmed = trimmed.replace(/price\s*[\d,\.\s`\/\-]*/gi, '');
 
         if (cleanSku) {
           const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           const skuRegex = new RegExp(escapeRegExp(cleanSku), 'gi');
           trimmed = trimmed.replace(skuRegex, '');
         }
-
+        // Safely remove only K- product codes and resulting empty brackets
         trimmed = trimmed.replace(/\bK-\d+[A-Z0-9\-]*\b/gi, '');
-        trimmed = trimmed.replace(/\b\d{4,5}[A-Z]{0,2}\b/gi, '');
-
+        trimmed = trimmed.replace(/\(\s*\)/g, '');
+        trimmed = trimmed.replace(/\[\s*\]/g, '');
         trimmed = trimmed.replace(/[\s\-\,\.\(\[\)\]\+\/]+$/, '');
         trimmed = trimmed.replace(/^[\s\-\,\.\(\[\)\]\+\/]+/, '');
         trimmed = trimmed.replace(/\s+/g, ' ').trim();

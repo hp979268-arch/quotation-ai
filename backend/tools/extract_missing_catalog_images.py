@@ -10,7 +10,7 @@ import fitz
 ROOT = Path(__file__).resolve().parents[1]
 INDEX_PATH = ROOT / "search_index_v2.json"
 AQUANT_PDF = ROOT / "uploads" / "Aquant Price List Vol 15. Feb 2026_Searchable.pdf"
-KOHLER_PDF = ROOT / "uploads" / "Kohler_Pricebook (March'26).pdf"
+KOHLER_PDF = ROOT / "uploads" / "Kohler_PriceBook (June'26).pdf"
 
 sys.path.insert(0, str(ROOT))
 import search_engine  # noqa: E402

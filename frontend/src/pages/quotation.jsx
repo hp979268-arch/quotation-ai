@@ -128,9 +128,9 @@ const formatDisplayDescription = (rawText = '', sku = '') => {
     if (norm(trimmed) === normSku) continue;
 
     // Remove price/MRP patterns
-    trimmed = trimmed.replace(/mrp\s*(?:rs\.?|rs|INR|₹)?\s*[\d,\s`\/\-]*/gi, '');
-    trimmed = trimmed.replace(/(?:rs\.?|rs|INR|₹)\s*[\d,\s`\/\-]*/gi, '');
-    trimmed = trimmed.replace(/price\s*[\d,\s`\/\-]*/gi, '');
+    trimmed = trimmed.replace(/mrp\s*(?:rs\.?|rs|INR|₹)?\s*[\d,\.\s`\/\-]*/gi, '');
+    trimmed = trimmed.replace(/(?:rs\.?|rs|INR|₹)\s*[\d,\.\s`\/\-]*/gi, '');
+    trimmed = trimmed.replace(/price\s*[\d,\.\s`\/\-]*/gi, '');
 
     // Remove the product's SKU if present in the text
     if (cleanSku) {
@@ -138,11 +138,10 @@ const formatDisplayDescription = (rawText = '', sku = '') => {
       const skuRegex = new RegExp(escapeRegExp(cleanSku), 'gi');
       trimmed = trimmed.replace(skuRegex, '');
     }
-
-    // Remove general model code patterns
+    // Safely remove only K- product codes and resulting empty brackets
     trimmed = trimmed.replace(/\bK-\d+[A-Z0-9\-]*\b/gi, '');
-    trimmed = trimmed.replace(/\b\d{4,5}[A-Z]{0,2}\b/gi, '');
-
+    trimmed = trimmed.replace(/\(\s*\)/g, '');
+    trimmed = trimmed.replace(/\[\s*\]/g, '');
     // Clean up remaining punctuation and multiple spaces
     trimmed = trimmed.replace(/[\s\-\,\.\(\[\)\]\+\/]+$/, ''); // clean trailing punctuation
     trimmed = trimmed.replace(/^[\s\-\,\.\(\[\)\]\+\/]+/, ''); // clean leading punctuation

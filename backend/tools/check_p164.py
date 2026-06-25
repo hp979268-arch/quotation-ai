@@ -1,7 +1,7 @@
 import fitz
 import os
 
-pdf_path = "uploads/Kohler_Pricebook (March'26).pdf"
+pdf_path = "uploads/Kohler_PriceBook (June'26).pdf"
 output_dir = "tmp_page_164"
 os.makedirs(output_dir, exist_ok=True)
 

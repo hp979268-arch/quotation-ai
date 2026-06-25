@@ -17,7 +17,7 @@ def find_trim_valve_products(pdf_path):
                     count += 1
     return count, list(set(products))
 
-march_c, march_p = find_trim_valve_products(r"uploads/Kohler_Pricebook (March'26).pdf")
+march_c, march_p = find_trim_valve_products(r"uploads/Kohler_PriceBook (June'26).pdf")
 june_c, june_p = find_trim_valve_products(r"uploads/Kohler_PriceBook (June'26).pdf")
 
 print(f"March: {march_c} occurrences, {len(march_p)} unique products")

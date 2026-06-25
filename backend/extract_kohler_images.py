@@ -2,7 +2,7 @@ import fitz  # PyMuPDF
 import os
 
 # PDF aur output folder ka path
-doc_path = r"backend/uploads/Kohler_Pricebook (March'26).pdf"
+doc_path = r"backend/uploads/Kohler_PriceBook (June'26).pdf"
 output_dir = r"backend/static/images/Kohler"
 
 # Output folder bana lo agar nahi hai

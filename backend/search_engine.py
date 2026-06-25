@@ -612,8 +612,8 @@ def _normalize_item_images(items):
 
 def save_index():
     global stored_items, keyword_index
-    _sanitize_item_images(stored_items)
-    _normalize_item_images(stored_items)
+    # _sanitize_item_images(stored_items)
+    # _normalize_item_images(stored_items)
     data = {
         "stored_items": stored_items,
         "keyword_index": keyword_index
@@ -743,8 +743,8 @@ def load_index(force: bool = False):
             search_cache.clear()
 
             # Strip bad/wrong product images (cover logos, tiny icons, missing files)
-            _sanitize_item_images(stored_items)
-            _normalize_item_images(stored_items)
+            # _sanitize_item_images(stored_items)
+            # _normalize_item_images(stored_items)
 
             # Reset caches
             search_cache = {}

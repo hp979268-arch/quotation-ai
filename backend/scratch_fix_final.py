@@ -65,7 +65,7 @@ if __name__ == "__main__":
     
     pdfs = [
         r"backend/uploads/Kohler_PriceBook (June'26).pdf",
-        r"backend/uploads/Kohler_Pricebook (March'26).pdf"
+        r"backend/uploads/Kohler_PriceBook (June'26).pdf"
     ]
     
     total = 0

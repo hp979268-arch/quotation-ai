@@ -90,4 +90,4 @@ def extract_all_variants(pdf_path, index_file):
         print("Failed to update MongoDB:", e)
 
 if __name__ == "__main__":
-    extract_all_variants(r"uploads/Kohler_Pricebook (March'26).pdf", "search_index_v2.json")
+    extract_all_variants(r"uploads/Kohler_PriceBook (June'26).pdf", "search_index_v2.json")

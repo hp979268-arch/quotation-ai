@@ -1,6 +1,6 @@
 import fitz
 
-pdf_path = "uploads/Kohler_Pricebook (March'26).pdf"
+pdf_path = "uploads/Kohler_PriceBook (June'26).pdf"
 doc = fitz.open(pdf_path)
 
 found = False
