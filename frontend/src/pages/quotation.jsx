@@ -1147,7 +1147,32 @@ export default function Quotation({ cart }) {
           {items.map((item, index) => (
             <article key={index} className="qt-item-card">
               <div className="qt-item-grid">
-                <div className="qt-thumb">
+                <div 
+                  className="qt-thumb" 
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = async (e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      try {
+                        const res = await fetch(`${BASE}/upload-image`, { method: "POST", body: formData });
+                        if (res.ok) {
+                          const data = await res.json();
+                          handleItemValueChange(index, 'image', data.url);
+                        }
+                      } catch (err) {
+                        console.error("Upload failed", err);
+                      }
+                    };
+                    input.click();
+                  }}
+                  title="Click to upload image"
+                >
                   {normalizeItemImage(item) ? (
                     <img src={resolveAssetUrl(normalizeItemImage(item))} alt="thumb" />
                   ) : (

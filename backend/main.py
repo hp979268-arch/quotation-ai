@@ -1116,6 +1116,24 @@ def delete_upload(filename: str):
         return {"message": f"'{filename}' deleted and system re-indexed."}
     raise HTTPException(status_code=404, detail="File not found")
 
+
+@app.post("/upload-image")
+async def upload_image(file: UploadFile = File(...)):
+    try:
+        ext = os.path.splitext(file.filename)[1]
+        if not ext:
+            ext = ".png"
+        safe_name = f"manual_{int(datetime.now().timestamp())}_{_sanitize_filename(file.filename, 'image' + ext)}"
+        upload_dir = os.path.join(STATIC_DIR, "images", "uploads")
+        os.makedirs(upload_dir, exist_ok=True)
+        path = os.path.join(upload_dir, safe_name)
+        content = await file.read()
+        with open(path, "wb") as buffer:
+            buffer.write(content)
+        return {"url": f"/static/images/uploads/{safe_name}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/rename-upload")
 def rename_upload(data: dict):
     old_name = data.get("old_name")
