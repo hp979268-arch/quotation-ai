@@ -747,28 +747,31 @@ def generate_quote(data):
         supporting_title_style = ParagraphStyle(
             'SupportingTitle',
             parent=styles['Normal'],
-            fontSize=13,
+            fontSize=14,
             fontName='Helvetica-Bold',
             textColor=colors.HexColor("#1e293b"),
-            spaceAfter=14,
-            spaceBefore=4,
-            alignment=1,           # centred
+            spaceAfter=6,
+            spaceBefore=0,
+            alignment=1,   # centred
         )
-        # Decorative underline via a thin horizontal rule below the heading
         heading_block = [
+            Spacer(1, 40),   # space from top of page
             Paragraph("Supporting Items", supporting_title_style),
-            HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#f59e0b"), spaceAfter=16),
+            HRFlowable(width="60%", thickness=1.5, color=colors.HexColor("#f59e0b"),
+                       spaceAfter=24, hAlign='CENTER'),
         ]
 
-        COLS = 3  # 3 columns → 2 rows for 6 images = fits on 1 page
-        col_w = 515 / COLS          # ≈ 171 pt per column
-        img_size = 170              # image display size (proportional)
+        # ── 2-column grid (original layout), centred ────────────────────────
+        COLS     = 2
+        img_size = 180          # slightly bigger for a clean look
+        col_w    = 180          # column width
+        # Centre the 2-col table (total = 360) inside the 515pt text area
+        side_pad = (515 - col_w * COLS) / 2   # ≈ 77.5 pt each side
 
         table_data = []
-
         for i in range(0, len(valid_items), COLS):
             row_items = valid_items[i:i + COLS]
-            img_row = []
+            img_row  = []
             name_row = []
 
             for item in row_items:
@@ -780,7 +783,6 @@ def generate_quote(data):
                     img_row.append("")
                     name_row.append("")
 
-            # Pad to full row width
             while len(img_row) < COLS:
                 img_row.append("")
                 name_row.append("")
@@ -788,24 +790,24 @@ def generate_quote(data):
             table_data.append(img_row)
             table_data.append(name_row)
 
-        img_table = Table(table_data, colWidths=[col_w] * COLS)
+        img_table = Table(table_data, colWidths=[col_w] * COLS,
+                          hAlign='CENTER')   # centre the whole table
 
-        # Style: even rows = images, odd rows = labels
         t_style = [('ALIGN', (0, 0), (-1, -1), 'CENTER')]
         for row_idx in range(len(table_data)):
-            if row_idx % 2 == 0:
-                t_style.append(('VALIGN', (0, row_idx), (-1, row_idx), 'BOTTOM'))
-                t_style.append(('TOPPADDING', (0, row_idx), (-1, row_idx), 14))
-            else:
-                t_style.append(('VALIGN', (0, row_idx), (-1, row_idx), 'TOP'))
-                t_style.append(('TOPPADDING', (0, row_idx), (-1, row_idx), 6))
-                t_style.append(('BOTTOMPADDING', (0, row_idx), (-1, row_idx), 12))
+            if row_idx % 2 == 0:   # image rows
+                t_style.append(('VALIGN',      (0, row_idx), (-1, row_idx), 'BOTTOM'))
+                t_style.append(('TOPPADDING',  (0, row_idx), (-1, row_idx), 20))
+            else:                   # label rows
+                t_style.append(('VALIGN',      (0, row_idx), (-1, row_idx), 'TOP'))
+                t_style.append(('TOPPADDING',  (0, row_idx), (-1, row_idx), 8))
+                t_style.append(('BOTTOMPADDING',(0, row_idx), (-1, row_idx), 10))
 
         img_table.setStyle(TableStyle(t_style))
 
-        # Render heading + image grid on the new page
         elements.extend(heading_block)
         elements.append(img_table)
+        elements.append(Spacer(1, 40))   # space at the bottom of page
 
 
     # Build
