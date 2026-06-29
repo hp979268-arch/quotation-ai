@@ -1318,13 +1318,15 @@ export default function Quotation({ cart }) {
         </div>
 
         <div className="qt-madeby-section">
-          <p className="qt-madeby-title">👤 PREPARED BY <span>(Select Staff)</span></p>
+          <p className="qt-madeby-title">👤 PREPARED BY <span>(Select or Type)</span></p>
           <div className="qt-madeby-fields">
+
+            {/* ── Dropdown: select from staff list ── */}
             <div className="qt-madeby-wrap" style={{ gridColumn: 'span 2' }}>
               <select
                 className="qt-field qt-madeby-input"
                 id="staff-select"
-                value={madeBy}
+                value={staffOptions.some(s => s.name === madeBy) ? madeBy : ''}
                 onChange={handleStaffSelect}
               >
                 <option value="">— Select Staff —</option>
@@ -1335,16 +1337,33 @@ export default function Quotation({ cart }) {
                 ))}
               </select>
             </div>
-            
-            {madeBy && (
+
+            {/* ── Manual input: type any name ── */}
+            <div className="qt-madeby-wrap" style={{ gridColumn: 'span 2' }}>
+              <input
+                className="qt-field qt-madeby-input"
+                type="text"
+                placeholder="Or type name manually..."
+                value={madeBy}
+                onChange={(e) => {
+                  setMadeBy(e.target.value);
+                  // If manually typed, clear phone (not from staff list)
+                  const matched = staffOptions.find(s => s.name === e.target.value);
+                  setMadeByPhone(matched ? matched.phone : '');
+                  setMadeByEmail(matched ? (matched.email || '') : '');
+                }}
+              />
+            </div>
+
+            {/* ── Phone: shown when staff selected or auto-filled ── */}
+            {madeBy && madeByPhone && (
               <div className="qt-madeby-wrap">
                 <input
                   className="qt-field qt-madeby-input"
                   type="text"
                   placeholder="Staff Phone"
                   value={madeByPhone}
-                  readOnly
-                  style={{ background: 'rgba(255,255,255,0.05)', opacity: 0.8 }}
+                  onChange={(e) => setMadeByPhone(e.target.value)}
                 />
               </div>
             )}
