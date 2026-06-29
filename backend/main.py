@@ -651,17 +651,20 @@ async def startup_event():
             else:
                 print("Using saved search index.")
 
-            # On Render: always force-seed MongoDB from the latest bundled index
+            # On Render: load search index FROM MongoDB (do NOT overwrite it)
             if os.getenv("RENDER") == "true" and mongodb.is_enabled():
                 try:
-                    bundled_index = search_engine.INDEX_FILE_BUNDLED
-                    if os.path.exists(bundled_index):
-                        with open(bundled_index, "r", encoding="utf-8") as _f:
-                            _data = json.load(_f)
-                        mongodb.save_search_index(_data)
-                        print(f"Render startup: Seeded MongoDB from bundled index ({len(_data.get('stored_items',[]))} items).")
+                    _mongo_data = mongodb.load_search_index()
+                    if _mongo_data and _mongo_data.get("stored_items"):
+                        search_engine.stored_items = _mongo_data.get("stored_items", [])
+                        search_engine.keyword_index = _mongo_data.get("keyword_index", {})
+                        search_engine._suggestion_cache.clear()
+                        search_engine.item_code_meta_cache.clear()
+                        print(f"Render startup: Loaded {len(search_engine.stored_items)} items FROM MongoDB.")
+                    else:
+                        print("Render startup: MongoDB index empty, keeping bundled index.")
                 except Exception as _e:
-                    print(f"Warning: Render startup MongoDB seed failed: {_e}")
+                    print(f"Warning: Render startup MongoDB load failed: {_e}")
 
         except Exception as e:
             print(f"Warning: background startup warmup failed: {e}")
@@ -706,10 +709,22 @@ def root():
 @app.get("/refresh")
 async def refresh_catalogs():
     import search_engine
+    # Try to load from MongoDB first (latest data)
+    if mongodb.is_enabled():
+        try:
+            _mongo_data = mongodb.load_search_index()
+            if _mongo_data and _mongo_data.get("stored_items"):
+                search_engine.stored_items = _mongo_data.get("stored_items", [])
+                search_engine.keyword_index = _mongo_data.get("keyword_index", {})
+                search_engine._suggestion_cache.clear()
+                search_engine.item_code_meta_cache.clear()
+                return {"message": f"Index reloaded from MongoDB with {len(search_engine.stored_items)} items."}
+        except Exception as e:
+            print(f"Warning: MongoDB refresh failed, falling back to disk: {e}")
     search_engine.load_index(force=True)
     search_engine._suggestion_cache.clear()
     search_engine.item_code_meta_cache.clear()
-    return {"message": "Index reloaded from disk successfully."}
+    return {"message": "Index reloaded from disk."}
 
 @app.get("/debug")
 def debug_paths():
