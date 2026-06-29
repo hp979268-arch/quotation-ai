@@ -208,7 +208,7 @@ export default function InlineSearch({ onAdd, disabled = false }) {
       setSuggestions([]);
 
       axios.get(`${BASE}/search-suggestions`, {
-        params: { q: trimmedQuery, brand: 'all', limit: 50 },
+        params: { q: trimmedQuery, brand: 'all', limit: 50, _t: Date.now() },
         signal: controller.signal,
       })
         .then((res) => {
@@ -298,7 +298,7 @@ export default function InlineSearch({ onAdd, disabled = false }) {
 
     // Pick full data from raw_item (now provided by backend)
     const product = s.raw_item || {};
-    const sku = sanitizeDisplayText(product.sku || s.text || '').trim();
+    const sku = sanitizeDisplayText(product.display_code || s.display_code || product.search_code || s.search_code || product.sku || s.text || '').trim();
     const fullText = sanitizeDisplayText(
       product.display_text || product.text || s.full_name || s.description || s.text || ''
     );
@@ -308,14 +308,7 @@ export default function InlineSearch({ onAdd, disabled = false }) {
     );
 
     let cleanedNameOnly = stripProductCode(nameOnly);
-    if (sku && cleanedNameOnly) {
-      const norm = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const normSku = norm(sku);
-      const normName = norm(cleanedNameOnly);
-      if (normName === normSku || normSku.includes(normName) || normName.includes(normSku)) {
-        cleanedNameOnly = '';
-      }
-    }
+    // Name stripping logic removed because user explicitly wants the SKU code to be visible in the name string
 
     const formatDisplayDescription = (rawText = '', skuVal = '') => {
       if (!rawText) return '';
@@ -369,7 +362,7 @@ export default function InlineSearch({ onAdd, disabled = false }) {
     }
 
     const newItem = {
-      name: cleanedNameOnly,
+      name: sku && cleanedNameOnly ? `${sku} - ${cleanedNameOnly}` : cleanedNameOnly || sku,
       price: String(finalPrice || '0'),
       quantity: 1,
       discount: 0,

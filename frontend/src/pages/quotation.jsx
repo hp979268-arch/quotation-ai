@@ -164,14 +164,7 @@ const sanitizeItem = (item = {}) => {
   const sku = String(item.sku || '').trim();
   let name = String(item.name || '').trim();
 
-  if (sku && name) {
-    const norm = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const normSku = norm(sku);
-    const normName = norm(name);
-    if (normName === normSku || normSku.includes(normName) || normName.includes(normSku)) {
-      name = '';
-    }
-  }
+  // Name stripping logic removed because user explicitly wants the SKU code to be visible in the name string
 
   const rawText = formatDisplayDescription(item.rawText || '', sku);
 
@@ -1183,27 +1176,9 @@ export default function Quotation({ cart }) {
                 <input
                   className="qt-field qt-name-field"
                   name="name"
-                  value={(() => {
-                    const sku = (item.sku || '').trim();
-                    const name = (item.name || '').trim();
-                    if (sku && name) return `${sku} - ${name}`;
-                    if (sku) return sku;
-                    return name;
-                  })()}
+                  value={item.name || ''}
                   placeholder="Item Name"
-                  onChange={(e) => {
-                    // Parse back: if user edits, split on first ' - '
-                    const val = e.target.value;
-                    const dashIdx = val.indexOf(' - ');
-                    if (dashIdx > 0 && item.sku) {
-                      const newSku = val.substring(0, dashIdx).trim();
-                      const newName = val.substring(dashIdx + 3).trim();
-                      handleItemValueChange(index, 'sku', newSku);
-                      handleItemValueChange(index, 'name', newName);
-                    } else {
-                      handleItemChange(index, e);
-                    }
-                  }}
+                  onChange={(e) => handleItemChange(index, e)}
                 />
                 <RoomCombobox
                   value={item.room || ''}
@@ -1232,7 +1207,18 @@ export default function Quotation({ cart }) {
                   name="sku"
                   value={item.sku || ''}
                   placeholder="SKU"
-                  onChange={(e) => handleItemChange(index, e)}
+                  onChange={(e) => {
+                    const newSku = e.target.value;
+                    handleItemValueChange(index, 'sku', newSku);
+                    const currentName = (item.name || '').trim();
+                    const oldSku = (item.sku || '').trim();
+                    if (!currentName || currentName === oldSku) {
+                      handleItemValueChange(index, 'name', newSku);
+                    } else if (oldSku && currentName.startsWith(oldSku + ' - ')) {
+                      const restOfName = currentName.substring(oldSku.length + 3);
+                      handleItemValueChange(index, 'name', newSku ? `${newSku} - ${restOfName}` : restOfName);
+                    }
+                  }}
                 />
                 <input
                   className="qt-field"
@@ -1259,9 +1245,9 @@ export default function Quotation({ cart }) {
               <textarea
                   className="qt-detail-area"
                   name="rawText"
-                  value={item.rawText}
+                  value={item.rawText || ''}
                   placeholder="Complete item details (specifications, size, etc.)"
-                  readOnly
+                  onChange={(e) => handleItemChange(index, e)}
                 />
               </div>
             </article>

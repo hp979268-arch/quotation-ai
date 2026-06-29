@@ -406,7 +406,8 @@ def generate_quote(data):
         for section in room_sections:
             elements.append(Paragraph(section["name"], section_heading_style))
 
-            show_disc_col = not (discount_percent > 0 or discount_flat > 0)
+            # Only show discount column if at least one item in this section has a discount > 0
+            show_disc_col = any(_to_float(item.get("discount"), 0.0) > 0 for item in section["items"])
             if show_disc_col:
                 section_rows = [[
                     "#",
@@ -419,7 +420,7 @@ def generate_quote(data):
                     "Disc %",
                     "Amount",
                 ]]
-                col_widths = [20, 62, 158, 48, 50, 30, 58, 39, 67]
+                col_widths = [20, 62, 146, 48, 50, 30, 70, 39, 67]
             else:
                 section_rows = [[
                     "#",
@@ -431,7 +432,7 @@ def generate_quote(data):
                     "Rate",
                     "Amount",
                 ]]
-                col_widths = [20, 62, 197, 48, 50, 30, 58, 67]
+                col_widths = [20, 62, 185, 48, 50, 30, 70, 67]
 
             for item_index, item in enumerate(section["items"], start=1):
                 qty = _safe_quantity(item.get("quantity"), 1.0)
@@ -458,10 +459,32 @@ def generate_quote(data):
                 )
                 section_rows.append(row_cells)
 
+            # Calculate rate total (Rate * Qty for each item)
+            rate_total = sum(
+                _to_float(it.get("price"), 0.0) * _safe_quantity(it.get("quantity"), 1.0)
+                for it in section["items"]
+            )
+
             total_cells = [Paragraph("<b>TOTAL</b>", section_cell_style)]
-            num_cols = len(section_rows[0])
-            for _ in range(num_cols - 2):
+            
+            # Pad up to Qty column (index 5)
+            # We already have "TOTAL" at index 0, so we add 5 empty strings
+            for _ in range(5):
                 total_cells.append("")
+                
+            # Rate total at index 6
+            total_cells.append(
+                Paragraph(
+                    f"<b>Rs. {rate_total:,.2f}</b>",
+                    ParagraphStyle('RateTotal', parent=section_cell_style, fontName='Helvetica-Bold', alignment=2)
+                )
+            )
+            
+            # If discount column is shown, add an empty cell for it at index 7
+            if show_disc_col:
+                total_cells.append("")
+                
+            # Amount total at the last index
             total_cells.append(
                 Paragraph(
                     f"<b>Rs. {section['display_total']:,.2f}</b>",
@@ -491,7 +514,7 @@ def generate_quote(data):
                 ('INNERGRID', (0, 0), (-1, -1), 0.35, colors.HexColor("#d7dee8")),
                 ('TOPPADDING', (0, 0), (-1, -1), 6),
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-                ('SPAN', (0, last_row_index), (-2, last_row_index)),
+                ('SPAN', (0, last_row_index), (5, last_row_index)),
                 ('BACKGROUND', (0, last_row_index), (-1, last_row_index), colors.white),
             ]))
 
@@ -523,13 +546,14 @@ def generate_quote(data):
         elements.append(overall_totals_table)
         elements.append(Spacer(1, 18))
     else:
-        show_disc_col = not (discount_percent > 0 or discount_flat > 0)
+        # Only show discount column if at least one item has a discount > 0
+        show_disc_col = any(_to_float(item.get("discount"), 0.0) > 0 for item in items)
         if show_disc_col:
             header_row = ["S.No", "Image", "Item Description", "Qty", "Price", "Disc(%)", "Amount"]
-            col_widths = [30, 60, 230, 45, 65, 45, 75]
+            col_widths = [30, 60, 215, 45, 80, 45, 75]
         else:
             header_row = ["S.No", "Image", "Item Description", "Qty", "Price", "Amount"]
-            col_widths = [30, 60, 275, 45, 65, 75]
+            col_widths = [30, 60, 260, 45, 80, 75]
 
         table_data = [header_row]
         
@@ -722,7 +746,7 @@ def generate_quote(data):
     target_names = [
         "Mirror.jpeg",
         "Cleaner.jpeg",
-        "Floor drain.jpeg",
+        "Floor drain & Channel.jpeg",
         "Glass partition.jpeg",
         "Accessories.jpeg",
         "Steam generator & controller.jpeg"
@@ -776,7 +800,13 @@ def generate_quote(data):
 
             for item in row_items:
                 try:
-                    img = RLImage(item["path"], width=img_size, height=img_size, kind='proportional')
+                    w, h = img_size, img_size
+                    if item["name"] == "Mirror":
+                        w, h = 180, 180
+                    elif item["name"] == "Cleaner":
+                        w, h = 135, 135
+                        
+                    img = RLImage(item["path"], width=w, height=h, kind='proportional')
                     img_row.append(img)
                     name_row.append(Paragraph(item["name"], name_style))
                 except Exception:
@@ -798,6 +828,11 @@ def generate_quote(data):
             if row_idx % 2 == 0:   # image rows
                 t_style.append(('VALIGN',       (0, row_idx), (-1, row_idx), 'BOTTOM'))
                 t_style.append(('TOPPADDING',   (0, row_idx), (-1, row_idx), 20))
+                
+                # Push Steam generator (row 4, col 1) slightly up using bottom padding
+                if row_idx == 4:
+                    t_style.append(('BOTTOMPADDING', (1, row_idx), (1, row_idx), 18))
+                    
                 # Add horizontal gap between the 2 columns
                 t_style.append(('RIGHTPADDING', (0, row_idx), (0, row_idx), 30))   # right pad col-0
                 t_style.append(('LEFTPADDING',  (1, row_idx), (1, row_idx), 30))   # left  pad col-1
