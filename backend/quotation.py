@@ -458,28 +458,10 @@ def generate_quote(data):
                 )
                 section_rows.append(row_cells)
 
-            # Calculate rate total (sum of all item prices × qty, before discount)
-            rate_total = sum(
-                _to_float(it.get("price"), 0.0) * _safe_quantity(it.get("quantity"), 1.0)
-                for it in section["items"]
-            )
-
             total_cells = [Paragraph("<b>TOTAL</b>", section_cell_style)]
             num_cols = len(section_rows[0])
-            # Fill blanks up to (but not including) Rate and Amount columns
-            for _ in range(num_cols - 3):
+            for _ in range(num_cols - 2):
                 total_cells.append("")
-            # Rate total cell
-            total_cells.append(
-                Paragraph(
-                    f"<b>Rs. {rate_total:,.2f}</b>",
-                    ParagraphStyle('RateTotal', parent=section_cell_style, fontName='Helvetica-Bold', alignment=2)
-                )
-            )
-            # Skip disc % column if present (it's already counted in num_cols - 3)
-            if show_disc_col:
-                total_cells.append("")  # empty disc % cell
-            # Amount total cell
             total_cells.append(
                 Paragraph(
                     f"<b>Rs. {section['display_total']:,.2f}</b>",
@@ -509,8 +491,7 @@ def generate_quote(data):
                 ('INNERGRID', (0, 0), (-1, -1), 0.35, colors.HexColor("#d7dee8")),
                 ('TOPPADDING', (0, 0), (-1, -1), 6),
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-                # Span the first 6 columns (0 to 5) for the "TOTAL" label, leaving Rate (6) and Amount (-1) separate
-                ('SPAN', (0, last_row_index), (5, last_row_index)),
+                ('SPAN', (0, last_row_index), (-2, last_row_index)),
                 ('BACKGROUND', (0, last_row_index), (-1, last_row_index), colors.white),
             ]))
 
