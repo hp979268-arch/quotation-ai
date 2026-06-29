@@ -1316,6 +1316,14 @@ def add_to_index(_unused_embeddings, items):
             if len(normalized_value) >= 3:
                 words_to_index.add(normalized_value)
 
+        # Also index search_code directly (handles bundle codes like "K-30520IN-0 + K-8705IN-0")
+        raw_search_code = str(item.get("search_code", "")).strip()
+        if raw_search_code:
+            words_to_index.add(raw_search_code.lower())
+            # Index all numeric parts so "30520" finds "K-30520IN-0 + K-8705IN-0"
+            for num_part in re.findall(r'\d{4,}', raw_search_code):
+                words_to_index.add(num_part)
+
         # 3. Add normalized name and first text slice for combined code-name queries
         norm_name = _normalize(name, strip_in=True)
         norm_head = _normalize(text[:120], strip_in=True)
