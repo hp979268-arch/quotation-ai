@@ -458,10 +458,28 @@ def generate_quote(data):
                 )
                 section_rows.append(row_cells)
 
+            # Calculate rate total (sum of all item prices × qty, before discount)
+            rate_total = sum(
+                _to_float(it.get("price"), 0.0) * _safe_quantity(it.get("quantity"), 1.0)
+                for it in section["items"]
+            )
+
             total_cells = [Paragraph("<b>TOTAL</b>", section_cell_style)]
             num_cols = len(section_rows[0])
-            for _ in range(num_cols - 2):
+            # Fill blanks up to (but not including) Rate and Amount columns
+            for _ in range(num_cols - 3):
                 total_cells.append("")
+            # Rate total cell
+            total_cells.append(
+                Paragraph(
+                    f"<b>Rs. {rate_total:,.2f}</b>",
+                    ParagraphStyle('RateTotal', parent=section_cell_style, fontName='Helvetica-Bold', alignment=2)
+                )
+            )
+            # Skip disc % column if present (it's already counted in num_cols - 3)
+            if show_disc_col:
+                total_cells.append("")  # empty disc % cell
+            # Amount total cell
             total_cells.append(
                 Paragraph(
                     f"<b>Rs. {section['display_total']:,.2f}</b>",
@@ -796,12 +814,17 @@ def generate_quote(data):
         t_style = [('ALIGN', (0, 0), (-1, -1), 'CENTER')]
         for row_idx in range(len(table_data)):
             if row_idx % 2 == 0:   # image rows
-                t_style.append(('VALIGN',      (0, row_idx), (-1, row_idx), 'BOTTOM'))
-                t_style.append(('TOPPADDING',  (0, row_idx), (-1, row_idx), 20))
+                t_style.append(('VALIGN',       (0, row_idx), (-1, row_idx), 'BOTTOM'))
+                t_style.append(('TOPPADDING',   (0, row_idx), (-1, row_idx), 20))
+                # Add horizontal gap between the 2 columns
+                t_style.append(('RIGHTPADDING', (0, row_idx), (0, row_idx), 30))   # right pad col-0
+                t_style.append(('LEFTPADDING',  (1, row_idx), (1, row_idx), 30))   # left  pad col-1
             else:                   # label rows
-                t_style.append(('VALIGN',      (0, row_idx), (-1, row_idx), 'TOP'))
-                t_style.append(('TOPPADDING',  (0, row_idx), (-1, row_idx), 8))
+                t_style.append(('VALIGN',       (0, row_idx), (-1, row_idx), 'TOP'))
+                t_style.append(('TOPPADDING',   (0, row_idx), (-1, row_idx), 8))
                 t_style.append(('BOTTOMPADDING',(0, row_idx), (-1, row_idx), 10))
+                t_style.append(('RIGHTPADDING', (0, row_idx), (0, row_idx), 30))
+                t_style.append(('LEFTPADDING',  (1, row_idx), (1, row_idx), 30))
 
         img_table.setStyle(TableStyle(t_style))
 
