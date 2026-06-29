@@ -509,7 +509,8 @@ def generate_quote(data):
                 ('INNERGRID', (0, 0), (-1, -1), 0.35, colors.HexColor("#d7dee8")),
                 ('TOPPADDING', (0, 0), (-1, -1), 6),
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-                ('SPAN', (0, last_row_index), (-2, last_row_index)),
+                # Span the first 6 columns (0 to 5) for the "TOTAL" label, leaving Rate (6) and Amount (-1) separate
+                ('SPAN', (0, last_row_index), (5, last_row_index)),
                 ('BACKGROUND', (0, last_row_index), (-1, last_row_index), colors.white),
             ]))
 
