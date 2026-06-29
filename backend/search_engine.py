@@ -201,7 +201,8 @@ def _resolve_local_image_path(image_path: str) -> str:
     if not image_path:
         return ""
 
-    rel = str(image_path).lstrip("/")
+    # Strip query parameters like ?v=12345 (cache busters) before file lookup
+    rel = str(image_path).split("?")[0].lstrip("/")
     rel = rel.replace("static/images/", "", 1)
     rel = rel.replace("static/", "", 1)
 
