@@ -422,16 +422,24 @@ def prepare_item_for_display(item):
     if _is_placeholder_code:
         display_item["images"] = []
     else:
-        best_image = _best_item_image(item)
-        if best_image:
-            display_item["images"] = [best_image]
+        # PRIORITY: If item already has a specifically assigned valid image, use it directly.
+        # This prevents _best_item_image from overriding bundle/variant-specific images
+        # with a shared base_code image (e.g. K-30520IN-0_TraceFullPedestal.png being
+        # replaced by K-30520IN-0.png for all 3 bundle variants).
+        existing_images = display_item.get("images") or []
+        verified_existing = [
+            img for img in existing_images
+            if img and _resolve_local_image_path(img) and not _is_page_extracted_image(img)
+            and _image_file_size(img) >= _MIN_PRODUCT_IMAGE_SIZE
+        ]
+        if verified_existing:
+            display_item["images"] = verified_existing
         else:
-            # Only keep image paths that actually exist on disk and are not page-extracted
-            verified = [
-                img for img in (display_item.get("images") or [])
-                if img and _resolve_local_image_path(img) and not _is_page_extracted_image(img)
-            ]
-            display_item["images"] = verified
+            best_image = _best_item_image(item)
+            if best_image:
+                display_item["images"] = [best_image]
+            else:
+                display_item["images"] = []
 
     # Normalize a few Aquant ceiling-shower variants whose OCR'd finish labels
     # can include an extra color that should not be shown in the UI.
