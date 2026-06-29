@@ -102,7 +102,7 @@ def _resolve_item_image(base_dir, item):
 
         candidate_paths = []
         if img_p.startswith("/static/images/"):
-            rel = img_p.replace("/static/images/", "", 1)
+            rel = img_p.split("?")[0].replace("/static/images/", "", 1)  # strip cache buster ?v=...
             image_roots = [
                 os.path.join(data_dir, "static", "images"),
                 os.path.join(base_dir, "static", "images"),
