@@ -760,47 +760,50 @@ def generate_quote(data):
             HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#f59e0b"), spaceAfter=16),
         ]
 
+        COLS = 3  # 3 columns → 2 rows for 6 images = fits on 1 page
+        col_w = 515 / COLS          # ≈ 171 pt per column
+        img_size = 170              # image display size (proportional)
+
         table_data = []
 
-        for i in range(0, len(valid_items), 2):
-            row_items = valid_items[i:i+2]
+        for i in range(0, len(valid_items), COLS):
+            row_items = valid_items[i:i + COLS]
             img_row = []
             name_row = []
 
             for item in row_items:
                 try:
-                    img = RLImage(item["path"], width=140, height=140, kind='proportional')
+                    img = RLImage(item["path"], width=img_size, height=img_size, kind='proportional')
                     img_row.append(img)
                     name_row.append(Paragraph(item["name"], name_style))
                 except Exception:
                     img_row.append("")
                     name_row.append("")
 
-            while len(img_row) < 2:
+            # Pad to full row width
+            while len(img_row) < COLS:
                 img_row.append("")
                 name_row.append("")
 
             table_data.append(img_row)
             table_data.append(name_row)
 
-        col_w = 515 / 2
-        img_table = Table(table_data, colWidths=[col_w, col_w])
+        img_table = Table(table_data, colWidths=[col_w] * COLS)
 
-        # Style: even rows = images, odd rows = names
-        t_style = [
-            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ]
+        # Style: even rows = images, odd rows = labels
+        t_style = [('ALIGN', (0, 0), (-1, -1), 'CENTER')]
         for row_idx in range(len(table_data)):
             if row_idx % 2 == 0:
                 t_style.append(('VALIGN', (0, row_idx), (-1, row_idx), 'BOTTOM'))
+                t_style.append(('TOPPADDING', (0, row_idx), (-1, row_idx), 14))
             else:
                 t_style.append(('VALIGN', (0, row_idx), (-1, row_idx), 'TOP'))
                 t_style.append(('TOPPADDING', (0, row_idx), (-1, row_idx), 6))
-                t_style.append(('BOTTOMPADDING', (0, row_idx), (-1, row_idx), 20))
+                t_style.append(('BOTTOMPADDING', (0, row_idx), (-1, row_idx), 12))
 
         img_table.setStyle(TableStyle(t_style))
 
-        # Keep heading + image table together on the same page
+        # Render heading + image grid on the new page
         elements.extend(heading_block)
         elements.append(img_table)
 
