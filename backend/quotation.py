@@ -523,9 +523,10 @@ def generate_quote(data):
             elements.append(Spacer(1, 12))
 
         overall_totals = [["Final Amount", f"Rs. {subtotal:,.2f}"]]
-        if discount_percent > 0:
+        if discount_percent > 0 or discount_flat > 0:
             discount_amount = subtotal - (grand - gst_amt)
-            overall_totals.append([f"Discount ({discount_percent:g}%)", f"- Rs. {discount_amount:,.2f}"])
+            discount_label = f"Discount ({discount_percent:g}%)" if discount_type == "percent" else "Discount"
+            overall_totals.append([discount_label, f"- Rs. {discount_amount:,.2f}"])
         if gst_rate > 0:
             overall_totals.append([f"GST ({gst_rate:g}%)", f"Rs. {gst_amt:,.2f}"])
         overall_totals.append(["Grand Total", f"Rs. {grand:,.2f}"])
