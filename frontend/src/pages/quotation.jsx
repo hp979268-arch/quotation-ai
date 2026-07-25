@@ -2,11 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import './quotation.css';
-
-import BASE from '../api';
+import BASE, { getHistoryBase } from '../api';
 import InlineSearch from './InlineSearch';
 import { readJson, writeJson } from '../utils/storage';
 import { resolveAssetUrl } from '../utils/url';
+
+const HISTORY_BASE = getHistoryBase();
 
 const QUOTE_DRAFT_KEY = 'quotation-ai/quote-draft';
 const QUOTE_HISTORY_CACHE_KEY = 'quotation-ai/quote-history-cache';
@@ -470,7 +471,7 @@ export default function Quotation({ cart }) {
 
   const fetchHistory = async () => {
     try {
-      const res = await axios.get(`${BASE}/list-quotes`);
+      const res = await axios.get(`${HISTORY_BASE}/list-quotes`);
       const normalized = res.data.quotes || [];
       setQuoteHistory(normalized);
       writeJson(QUOTE_HISTORY_CACHE_KEY, normalized);
@@ -563,7 +564,7 @@ export default function Quotation({ cart }) {
 
   const loadQuote = async (id) => {
     try {
-      const res = await axios.get(`${BASE}/get-quote/${id}`);
+      const res = await axios.get(`${HISTORY_BASE}/get-quote/${id}`);
       const data = res.data;
       setClient({
         client_name: data.client_name || '',
@@ -602,7 +603,7 @@ export default function Quotation({ cart }) {
   const deleteQuote = async (id) => {
     if (!window.confirm('Delete this quotation record?')) return;
     try {
-      await axios.delete(`${BASE}/delete-quote/${id}`);
+      await axios.delete(`${HISTORY_BASE}/delete-quote/${id}`);
       fetchHistory();
     } catch (err) {
       alert('Delete failed');
