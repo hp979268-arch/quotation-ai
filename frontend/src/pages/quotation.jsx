@@ -471,10 +471,37 @@ export default function Quotation({ cart }) {
 
   const fetchHistory = async () => {
     try {
-      const res = await axios.get(`${HISTORY_BASE}/list-quotes`);
-      const normalized = res.data.quotes || [];
-      setQuoteHistory(normalized);
-      writeJson(QUOTE_HISTORY_CACHE_KEY, normalized);
+      let cloudQuotes = [];
+      let localQuotes = [];
+
+      try {
+        const resCloud = await axios.get(`${HISTORY_BASE}/list-quotes`);
+        cloudQuotes = resCloud.data.quotes || [];
+      } catch (e) {
+        console.warn('Failed to fetch cloud quote history', e);
+      }
+
+      if (BASE !== HISTORY_BASE) {
+        try {
+          const resLocal = await axios.get(`${BASE}/list-quotes`);
+          localQuotes = resLocal.data.quotes || [];
+        } catch (e) {
+          console.warn('Failed to fetch local quote history', e);
+        }
+      }
+
+      const quoteMap = new Map();
+      [...cloudQuotes, ...localQuotes].forEach((q) => {
+        if (q && q.id) {
+          if (!quoteMap.has(q.id) || (q.date && q.date > quoteMap.get(q.id).date)) {
+            quoteMap.set(q.id, q);
+          }
+        }
+      });
+
+      const combined = Array.from(quoteMap.values()).sort((a, b) => (b.date || 0) - (a.date || 0));
+      setQuoteHistory(combined);
+      writeJson(QUOTE_HISTORY_CACHE_KEY, combined);
     } catch (err) {
       console.error('Failed to fetch history', err);
       setQuoteHistory(normalizeQuoteHistory(readJson(QUOTE_HISTORY_CACHE_KEY, [])));
@@ -564,8 +591,17 @@ export default function Quotation({ cart }) {
 
   const loadQuote = async (id) => {
     try {
-      const res = await axios.get(`${HISTORY_BASE}/get-quote/${id}`);
-      const data = res.data;
+      let data = null;
+      if (BASE !== HISTORY_BASE) {
+        try {
+          const res = await axios.get(`${BASE}/get-quote/${id}`);
+          data = res.data;
+        } catch (e) {}
+      }
+      if (!data) {
+        const res = await axios.get(`${HISTORY_BASE}/get-quote/${id}`);
+        data = res.data;
+      }
       setClient({
         client_name: data.client_name || '',
         mobile: data.mobile || '',
@@ -603,7 +639,14 @@ export default function Quotation({ cart }) {
   const deleteQuote = async (id) => {
     if (!window.confirm('Delete this quotation record?')) return;
     try {
-      await axios.delete(`${HISTORY_BASE}/delete-quote/${id}`);
+      if (BASE !== HISTORY_BASE) {
+        try {
+          await axios.delete(`${BASE}/delete-quote/${id}`);
+        } catch (e) {}
+      }
+      try {
+        await axios.delete(`${HISTORY_BASE}/delete-quote/${id}`);
+      } catch (e) {}
       fetchHistory();
     } catch (err) {
       alert('Delete failed');
@@ -850,6 +893,9 @@ export default function Quotation({ cart }) {
       const today = new Date();
       const formattedDate = today.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
       setQuoteDate(formattedDate);
+      if (BASE !== HISTORY_BASE) {
+        axios.post(`${HISTORY_BASE}/save-quote-record`, payload).catch(() => {});
+      }
       fetchHistory();
       await notifyQuoteReady(qNum, grandTotal);
     } catch (error) {

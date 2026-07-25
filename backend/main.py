@@ -819,6 +819,15 @@ async def create_quote(data: dict):
         },
     )
 
+@app.post("/save-quote-record")
+async def save_quote_record(data: dict):
+    timestamp = int(time.time())
+    client_slug = _sanitize_filename(data.get("client_name", "Unknown"), "Unknown")
+    quote_payload = dict(data)
+    filename = f"quote_{timestamp}_{client_slug}.json"
+    _save_quote_record(filename, quote_payload)
+    return {"status": "ok", "filename": filename}
+
 @app.post("/send-quote-email")
 async def send_quote_email(data: dict):
     to_email = str(data.get("to_email") or "").strip()
