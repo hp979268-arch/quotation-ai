@@ -97,6 +97,16 @@ def _resolve_item_image(base_dir, item):
     )
 
     if not is_placeholder_or_pe:
+        if img_p.startswith("data:image/"):
+            try:
+                import base64, io
+                header, encoded = img_p.split(",", 1)
+                img_data = base64.b64decode(encoded)
+                bio = io.BytesIO(img_data)
+                return RLImage(bio, width=58, height=58, kind='bound')
+            except Exception:
+                pass
+
         is_frozen = getattr(sys, "frozen", False)
         exe_dir = os.path.dirname(os.path.abspath(sys.executable)) if is_frozen else base_dir
         data_dir = resolve_data_dir(is_frozen, exe_dir)
