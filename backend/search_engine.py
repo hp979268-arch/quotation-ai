@@ -188,6 +188,10 @@ _KNOWN_FINISH_CODES = tuple(sorted(_KNOWN_FINISH_LABELS.keys(), key=len, reverse
 
 def _image_file_size(image_path: str) -> int:
     """Return the file size of a /static/images/... path, or -1 if missing."""
+    if not image_path:
+        return -1
+    if str(image_path).startswith("data:image/"):
+        return len(image_path)
     full = _resolve_local_image_path(image_path)
     if not full:
         return -1
@@ -430,8 +434,7 @@ def prepare_item_for_display(item):
         existing_images = display_item.get("images") or []
         verified_existing = [
             img for img in existing_images
-            if img and _resolve_local_image_path(img) and not _is_page_extracted_image(img)
-            and _image_file_size(img) >= _MIN_PRODUCT_IMAGE_SIZE
+            if img and (str(img).startswith("data:image/") or (_resolve_local_image_path(img) and not _is_page_extracted_image(img) and _image_file_size(img) >= _MIN_PRODUCT_IMAGE_SIZE))
         ]
         if verified_existing:
             display_item["images"] = verified_existing
@@ -957,6 +960,11 @@ def _best_item_image(item):
     base_code = code_meta.get("base_code", "")
     full_code = code_meta.get("full_code", "")
     
+    # 0. Check data URI candidates first
+    for img_path in (item.get("images") or []):
+        if img_path and str(img_path).startswith("data:image/"):
+            return img_path
+
     # 1. Check resolved cache first for exact variant (full_code)
     if full_code and full_code in _resolved_code_to_image_cache:
         return _resolved_code_to_image_cache[full_code]
